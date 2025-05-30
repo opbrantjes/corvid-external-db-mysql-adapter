@@ -24,4 +24,7 @@ app.post('/provision', wrapError(provision.provision))
 
 app.use(errorMiddleware)
 
-app.listen(port, () => console.log(`MySQL adapter listening on port ${port}!`))
+const port = process.env.PORT || 10000;
+app.listen(port, () => {
+  console.log(`MySQL adapter listening on port ${port}`);
+});
