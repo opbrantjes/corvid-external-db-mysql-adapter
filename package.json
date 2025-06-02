@@ -15,6 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+  "dotenv": "^16.0.3",
+  "express": ...   
+    
     "express": "^4.16.4",
     "mysql": "^2.16.0",
     "uuid": "^3.4.0"
