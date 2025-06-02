@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log("👉 ENV TEST:", process.env.HOST, process.env.USER, process.env.PASSWORD, process.env.DB);
 const express = require('express');
 const bodyParser = require('body-parser');
 const items = require('./controller/items');
