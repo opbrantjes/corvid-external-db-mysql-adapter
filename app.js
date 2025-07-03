@@ -22,6 +22,9 @@ app.post('/data/remove', wrapError(items.removeItem))
 app.post('/data/count', wrapError(items.countItems))
 app.post('/provision', wrapError(provision.provision))
 
+// ✅ Voeg deze regel toe:
+app.get('/:collection', wrapError(items.findItems));
+
 app.use(errorMiddleware)
 
 app.listen(port, () => console.log(`MySQL adapter listening on port ${port}!`))
