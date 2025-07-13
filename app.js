@@ -1,27 +1,69 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const items = require('./controller/items')
-const schemas = require('./controller/schemas')
-const provision = require('./controller/provision')
-const { wrapError, errorMiddleware } = require('./utils/error-middleware')
-const authMiddleware = require('./utils/auth-middleware')
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const dbClient = require('./client/mysqlClient');
 
-const app = express()
-const port = process.env.PORT || 8080
+const app = express();
+const port = process.env.PORT || 3000;
 
-app.use(bodyParser.json())
-app.use(authMiddleware)
+app.use(cors());
+app.use(bodyParser.json());
 
-app.post('/schemas/find', wrapError(schemas.findSchemas))
-app.post('/schemas/list', wrapError(schemas.listSchemas))
-app.post('/data/find', wrapError(items.findItems))
-app.post('/data/get', wrapError(items.getItem))
-app.post('/data/insert', wrapError(items.insertItem))
-app.post('/data/update', wrapError(items.updateItem))
-app.post('/data/remove', wrapError(items.removeItem))
-app.post('/data/count', wrapError(items.countItems))
-app.post('/provision', wrapError(provision.provision))
+// ✅ Test route
+app.get('/', (req, res) => {
+  res.send('Wix External Database Adapter draait!');
+});
 
-app.use(errorMiddleware)
+// ✅ Route: Insert item
+app.post('/data/insert', async (req, res) => {
+  const { collectionName, item } = req.body;
 
-app.listen(port, () => console.log(`MySQL adapter listening on port ${port}!`))
+  console.log('📥 /data/insert aangeroepen');
+  console.log('➡️ Collection:', collectionName);
+  console.log('📦 Item:', JSON.stringify(item, null, 2));
+
+  try {
+    const result = await dbClient.insert(collectionName, item);
+    console.log('✅ Insert geslaagd:', result);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Insert mislukt:', error);
+    res.status(500).send(error.message || 'Onbekende fout bij insert');
+  }
+});
+
+// ✅ Route: Query
+app.post('/data/query', async (req, res) => {
+  const { collectionName, query } = req.body;
+
+  console.log('🔍 /data/query aangeroepen');
+  console.log('➡️ Collection:', collectionName);
+  console.log('🔎 Query:', JSON.stringify(query, null, 2));
+
+  try {
+    const result = await dbClient.query(collectionName, query);
+    console.log('✅ Query resultaat:', result.length, 'records');
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Query mislukt:', error);
+    res.status(500).send(error.message || 'Onbekende fout bij query');
+  }
+});
+
+// ✅ Route: List schemas
+app.post('/schemas/list', async (req, res) => {
+  console.log('📑 /schemas/list aangeroepen');
+
+  try {
+    const result = await dbClient.listSchemas();
+    console.log('✅ Schemas gevonden:', result);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Schema ophalen mislukt:', error);
+    res.status(500).send(error.message || 'Onbekende fout bij schemas ophalen');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`🚀 Server luistert op poort ${port}`);
+});
